@@ -1,0 +1,38 @@
+# ♦ : add
+# ♥ : multiply
+# ♠ : subtract
+# ♣ : divide
+# H  72 e 101 l 108 l 108 o 111 , 44 <sp> 32
+# w 119 o 111 r 114 l 108 d 100 ! 33 <nl> 10
+#
+# puts "Hello, world!"
+#
+9♦ 8♥
+J♦
+A♦ 2♣ 3♥ 7♠
+J♦
+A♦ 7♦
+J♦ J♦
+A♦ 3♦
+J♦
+5♥ 6♦ 4♥
+J♥
+A♥ 6♠ 6♠
+J♥
+A♦ 8♦
+J♦
+A♦ 8♠
+J♦
+A♦ 3♦
+J♦
+A♦ 6♠
+J♦
+A♦ 8♠
+J♦
+A♥ 3♦ 2♠
+J♥
+A♥ 2♣ 6♠
+J♥
+
+# One more time (same code compacted).
+9♦8♥J♦A♦2♣3♥7♠J♦A♦7♦J♦J♦A♦3♦J♦5♥6♦4♥J♥A♥6♠6♠J♥A♦8♦J♦A♦8♠J♦A♦3♦J♦A♦6♠J♦A♦8♠J♦A♥3♦2♠J♥A♥2♣6♠J♥

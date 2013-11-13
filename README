@@ -1,0 +1,45 @@
+ANTE
+
+    Ante is an esoteric programming language where all you've got is a deck of
+    playing cards.
+
+FOUR REGISTERS, ZERO INITIALIZED
+
+    ♦ ♥ ♠ ♣
+
+OPERATORS, SEQUENTIAL PRECEDENCE
+
+    ♦  # Add
+    ♥  # Multiply
+    ♠  # Subtract
+    ♣  # Divide
+
+SYNTAX
+
+    2-9[x]...     # Assignment; the suit of first card designates target register
+    A[x]          # Current value of register [x] (the Ace aces it)
+    K[x]          # Jump to the last Q[x] label if A[x] != 0 (go see the Queen)
+    Q[x]          # Label (the Queen is waiting)
+    J[x]          # Print A[x] as character (Jack shows the goods)
+   10[x]          # Print A[x] as number
+
+EXAMPLES
+
+    5♣            # ♣ = 5
+    2♦ 3♥         # ♦ = 2 * 3 (♦ is 6)
+    A♦ 2♦ 5♥      # ♦ = ♦ + 2 * 5 (♦ is 40)
+    2♦ 3♥ A♣      # ♦ = 2 * 3 + ♣ (♦ is 11)
+    Q♦ K♦         # Infinite loop since ♦ != 0
+
+    # 15.times { |i| print i }
+    3♥ 5♥         # ♥ = 3 * 5
+    Q♥            # Label
+    10♦           # Print current value of ♦
+    A♦ 3♦ 2♠      # ♦ = ♦ + 3 - 2
+    A♥ 3♠ 2♦      # ♥ = ♥ - 3 + 2
+    K♥            # Jump to Q♥ if ♥ != 0
+
+LICENSE
+
+   Copyright (c) 2013 Michael Dvorkin
+   Ante is freely distributable under the terms of MIT license.
