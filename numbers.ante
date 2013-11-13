@@ -5,7 +5,7 @@
 #
 # 15.times { |i| print "#{i}," }
 # puts
-
+#
 2♠ 5♥ 4♥ 4♦   # ♠ = 2 * 5 * 4 + 4 (= 44, comma character code)
 3♥ 5♥         # ♥ = 3 * 5
 Q♥            # Label
@@ -16,11 +16,10 @@ A♥ 3♠ 2♦      # ♥ = ♥ - 3 + 2
 K♥            # Jump to Q♥ if ♥ != 0
 2♠ 5♥         # ♠ = 2 * 5 (= 10, \n character code)
 J♠            # Print \n
-
 2♦ 2♠         # ♦ = 2 - 2 (reset the counter)
 
-# Run one more time (the same code in compacted). Note that
-# the jump label is different.
+# Run one more time (the same code compacted). Note that the jump
+# label is different.
 
 2♠5♥4♥4♦
 3♣5♥Q♣10♦J♠A♦3♦2♠
