@@ -16,7 +16,8 @@ OPERATORS, SEQUENTIAL PRECEDENCE
 
 SYNTAX
 
-    2-9[x]...     # Assignment; the suit of first card designates target register
+    2-9[x]...     # Assignment; the suit of first card designates
+                  # target register
     A[x]          # Current value of register [x] (the Ace aces it)
     K[x]          # Jump to the last Q[x] label if A[x] != 0 (go see the Queen)
     Q[x]          # Label (the Queen is waiting)
