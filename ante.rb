@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+# encoding: utf-8
+#
 # Copyright (c) 2013 Michael Dvorkin
 #
 # Ante is an esoteric programming language where all you've got is
@@ -118,7 +121,8 @@ class Ante
   end
 end
 
-if __FILE__ == $0
-  Ante.new.run(IO.read("hello.ante"))
-  Ante.new.run(IO.read("numbers.ante"))
+if ARGV[0]
+  Ante.new.run(IO.read(ARGV[0]))
+else
+  puts "usage: ante filename.ante"
 end
