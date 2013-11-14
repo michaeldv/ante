@@ -26,26 +26,8 @@ class Ante
   end
 
   def run(source)
-    lines = source.split("\n").map { |line| line.sub(/#.*$/, "").strip }
-    ### ap lines
-
-    # Turn source file into array of cards. Each card is 2-item
-    # array of rank and suit.
-    lines.each_with_index do |line, i|
-      @code += [[ nil, i + 1 ]] # <-- Line number cards have nil rank.
-      @code += line.scan(/(10|[2-9JQKA])([♦♥♠♣])/)
-    end
-
-    # Collect labels and convert ranks from String to Fixnum.
-    @code.each_with_index do |card, i|
-      if card.rank =~ /\d/
-        card.rank = card.rank.to_i
-      elsif card.rank == "Q" 
-        @labels[card.suit] = i + 1
-      end
-    end
-    ### ap @code
-    ### ap @labels
+    parse(source)
+    ### ap @code; ap @labels
 
     while card = @code[@pc]
       @pc += 1
@@ -56,6 +38,34 @@ class Ante
       when "J" then dump(card, :char)
       when 10  then dump(card)
       else          assign(card)
+      end
+    end
+  end
+
+  def parse(source)
+    lines = source.split("\n").map { |line| line.sub(/#.*$/, "").strip }
+    ### ap lines
+
+    # Turn source file into array of cards. Each card is 2-item
+    # array of rank and suit.
+    lines.each_with_index do |line, i|
+      @code += [[ nil, i + 1 ]] # <-- Line number cards have nil rank.
+      @code += line.scan(/(10|[2-9JQKA])([♦♥♠♣])/)
+    end
+
+    # A pass to convert ranks to Fixnum and extract labels.
+    pc = 0
+    while card = @code[pc]
+      pc += 1
+      if card.rank =~ /\d/
+        card.rank = card.rank.to_i
+      elsif card.rank == "Q"
+        queen = card.suit
+        while @code[pc] && @code[pc].rank == "Q" && @code[pc].suit == card.suit
+          queen += card.suit
+          pc += 1
+        end
+        @labels[queen] = pc
       end
     end
   end
@@ -72,10 +82,20 @@ class Ante
   end
 
   def jump(card)
-    # puts "jump #{card.inspect}"
+    # puts "jump #{card.inspect}, pc: #{@pc.inspect}, #{@labels.inspect}"
     suit = card.suit
-    if @labels[suit] && instance_variable_get("@#{suit}") != 0
-      @pc = @labels[suit]
+    while @code[@pc] && @code[@pc].rank == "K" && @code[@pc].suit == card.suit
+      suit += card.suit
+      @pc += 1
+    end
+
+    if instance_variable_get("@#{suit[0]}") != 0
+      # puts "jumping to " << "Q#{suit[0]}" * suit.size
+      if @labels[suit]
+        @pc = @labels[suit]
+      else
+        exception("couldn't find " << "Q#{suit[0]}" * suit.size << " to go to")
+      end
     end
   end
 
@@ -112,6 +132,10 @@ class Ante
     end
     instance_variable_set("@#{target}", initial)
     # dump_registers
+  end
+
+  def exception(message)
+    abort("Ante exception: #{message} on line #{@line}:#{@pc}")
   end
 
   def dump_registers

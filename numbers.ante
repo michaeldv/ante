@@ -16,11 +16,13 @@ A♥ 3♠ 2♦      # ♥ = ♥ - 3 + 2
 K♥            # Jump to Q♥ if ♥ != 0
 2♠ 5♥         # ♠ = 2 * 5 (= 10, \n character code)
 J♠            # Print \n
+
 2♦ 2♠         # ♦ = 2 - 2 (reset the counter)
 
 # Run one more time (the same code compacted). Note that the jump
-# label is different.
+# label is twin queens (Q♥Q♥).
 
 2♠5♥4♥4♦
-3♣5♥Q♣10♦J♠A♦3♦2♠
-A♣3♠2♦K♣2♠5♥J♠
+3♥5♥Q♥Q♥10♦J♠A♦3♦2♠
+A♥3♠2♦K♥K♥2♠5♥J♠
+
