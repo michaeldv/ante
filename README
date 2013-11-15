@@ -25,7 +25,7 @@ SYNTAX
    10[x]          # Print A[x] as number
 
     Kings and Queens can have twins, triplets, etc. of the same suit. While
-    single K♥ jumps to Q♥, K♥K♥ twins will jump to Q♥Q♥, etc.
+    single K♥ goes to Q♥, K♥K♥ twins will go to Q♥Q♥ and so on.
 
 EXAMPLES
 
@@ -46,7 +46,7 @@ EXAMPLES
     For more examples check out *.ante files including Yusuke Endoh's
     mind-boggling Ante quine (the program that prints itself):
 
-    http://https://github.com/michaeldv/ante/blob/master/quine.ante
+    https://github.com/michaeldv/ante/blob/master/quine.ante
 
 LICENSE
 

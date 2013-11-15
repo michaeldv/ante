@@ -94,7 +94,7 @@ class Ante
       if @labels[suit]
         @pc = @labels[suit]
       else
-        exception("couldn't find " << "Q#{suit[0]}" * suit.size << " to go to")
+        exception("can't find " << "Q#{suit[0]}" * suit.size << " to go to")
       end
     end
   end
@@ -102,7 +102,15 @@ class Ante
   def dump(card, char = nil)
     # puts "dump #{card.inspect} => "
     value = instance_variable_get("@#{card.suit}")
-    print char ? value.chr : value
+    if char
+      if value.between?(0, 255)
+        print value.chr
+      else
+        exception("character code #{value} is out of 0..255 range")
+      end
+    else
+      print value
+    end
   end
 
   # Fetch the rest of the assignment expression.
@@ -127,7 +135,12 @@ class Ante
       when "♦" then initial += rank
       when "♥" then initial *= rank
       when "♠" then initial -= rank
-      when "♣" then initial /= rank rescue 0
+      when "♣" then
+        if rank != 0
+          initial /= rank
+        else
+          exception("division by zero")
+        end
       end
     end
     instance_variable_set("@#{target}", initial)
@@ -135,7 +148,7 @@ class Ante
   end
 
   def exception(message)
-    abort("Ante exception: #{message} on line #{@line}:#{@pc}")
+    abort("Ante exception: #{message} on line #{@line} (pc:#{@pc})")
   end
 
   def dump_registers
