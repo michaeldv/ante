@@ -43,6 +43,11 @@ EXAMPLES
     A♥ 3♠ 2♦      # ♥ = ♥ - 3 + 2
     K♥            # Jump to Q♥ if ♥ != 0
 
+    For more examples check out *.ante files including Yusuke Endoh's
+    mind-boggling Ante quine (the program that prints itself):
+
+    http://https://github.com/michaeldv/ante/blob/master/quine.ante
+
 LICENSE
 
    Copyright (c) 2013 Michael Dvorkin
