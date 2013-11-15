@@ -24,6 +24,9 @@ SYNTAX
     J[x]          # Print A[x] as character (Jack shows the goods)
    10[x]          # Print A[x] as number
 
+    Kings and Queens can have twins, triplets, etc. of the same suit. While
+    single K♥ jumps to Q♥, K♥K♥ twins will jump to Q♥Q♥, etc.
+
 EXAMPLES
 
     5♣            # ♣ = 5
