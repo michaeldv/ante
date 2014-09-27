@@ -159,7 +159,7 @@ class Ante
 end
 
 if ARGV[0]
-  Ante.new.run(IO.read(ARGV[0]))
+  Ante.new.run(IO.read(ARGV[0], encoding: "utf-8"))
 else
   puts "usage: ante filename.ante"
 end
