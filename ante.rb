@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # encoding: utf-8
 #
-# Copyright (c) 2013 Michael Dvorkin
+# Copyright (c) 2013-2104 Michael Dvorkin
 #
 # Ante is an esoteric programming language where all you've got is
 # a deck of cards.
@@ -9,7 +9,6 @@
 # 95% of this code was developed on the way back from RubyConf 2013
 # during 5-hour flight from Miami to San Francisco.
 # 
-### require "awesome_print"
 
 class Array
   def rank; self[0] end
@@ -27,7 +26,6 @@ class Ante
 
   def run(source)
     parse(source)
-    ### ap @code; ap @labels
 
     while card = @code[@pc]
       @pc += 1
@@ -44,7 +42,6 @@ class Ante
 
   def parse(source)
     lines = source.split("\n").map { |line| line.sub(/#.*$/, "").strip }
-    ### ap lines
 
     # Turn source file into array of cards. Each card is 2-item
     # array of rank and suit.
@@ -121,7 +118,6 @@ class Ante
       operands += [ card ]
       @pc += 1
     end
-    ### ap "remaining: #{operands.inspect}"
     operands
   end
 
