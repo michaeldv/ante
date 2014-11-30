@@ -59,11 +59,42 @@ impl Ante {
         let lines: Vec<String> = program.lines().map( |line|
             comments.replace_all(line, "").as_slice().trim().to_string()
         ).collect();
+
+        //\\ DEBUG //\\
+        for i in range(0, lines.len()) {
+            println!("{:2}) parsing: /{}/", i, lines[i]);
+        }
+
+        // Turn source file into array of cards. Each card a struct of rank and suit.
+        let card = Regex::new(r"(10|[2-9JQKA])([♦♥♠♣])").unwrap();
+        for (i, line) in lines.iter().enumerate() {
+            // Line number cards have zero rank.
+            self.code.push(Card { rank: 0, suit: i as u32 + 1 });
+
+            // Parse cards using regural expression. Card rank and suit characters get saved
+            // as u32 runes (to cast u32 back to char use std::char::from_u32(ch).unwrap()).
+            for caps in card.captures_iter(line.as_slice()) {
+                let rank = caps.at(1).char_at(0);
+                let suit = caps.at(2).char_at(0);
+                let card = match rank {
+                   '1'       => Card { rank: 10, suit: suit as u32 },
+                   '2'...'9' => Card { rank: rank as u32 - 48, suit: suit as u32 },
+                   _         => Card { rank: rank as u32, suit: suit as u32 }
+                };
+                self.code.push(card);
+            }
+        }
+
+        //\\ DEBUG //\\
+        for i in range(0, self.code.len()) {
+            println!("{:2}) code: /{}:{}/", i, self.code[i].rank, self.code[i].suit);
+        }
+
     }
 }
 
 
 fn main() {
     println!("usage: ante filename.ante");
-    Ante::new().run("hello.ante".as_slice());
+    Ante::new().run("factorial.ante".as_slice());
 }
