@@ -14,13 +14,13 @@ use num::bigint::BigInt;
 
 
 struct Card {
-	rank: u32,
-	suit: u32
+    rank: u32,
+    suit: u32
 }
 
 struct Ante {
-	pc:     int,                    // Program counter (index within ante.code)
-	line:   int,                    // Current line number.
+    pc:     int,                    // Program counter (index within ante.code)
+    line:   int,                    // Current line number.
     code:   Vec<Card>,              // Array of cards.
     vars:   HashMap<char, uint>,    // Four registers hashed by suit.
     labels: HashMap<uint, uint>,    // Labels for ante.pc to jump to.
@@ -45,10 +45,20 @@ impl Ante {
         }
     }
 
-    fn run(& mut self, filename: &str) {
+    fn run(&mut self, filename: &str) {
         let mut file = File::open(&Path::new(filename));
         let program = file.read_to_string().unwrap();
         println!("file: {}", program);
+        self.parse(program.as_slice())
+    }
+
+    // Turn source file into array of cards.
+    fn parse(&mut self, program: &str) {
+        // Split program blob into lines getting rid of comments and whitespaces.
+        let comments = Regex::new(r"#.*$").unwrap();
+        let lines: Vec<String> = program.lines().map( |line|
+            comments.replace_all(line, "").as_slice().trim().to_string()
+        ).collect();
     }
 }
 
