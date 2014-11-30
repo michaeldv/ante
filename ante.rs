@@ -19,8 +19,8 @@ struct Card {
 }
 
 struct Ante {
-    pc:     int,                    // Program counter (index within ante.code)
-    line:   int,                    // Current line number.
+    pc:     uint,                   // Program counter (index within ante.code)
+    line:   uint,                   // Current line number.
     code:   Vec<Card>,              // Array of cards.
     vars:   HashMap<char, uint>,    // Four registers hashed by suit.
     labels: HashMap<uint, uint>,    // Labels for ante.pc to jump to.
@@ -90,6 +90,25 @@ impl Ante {
             println!("{:2}) code: /{}:{}/", i, self.code[i].rank, self.code[i].suit);
         }
 
+        // Extra pass to set up jump labels.
+        let mut pc = 0u;
+        while pc < self.code.len() - 1 {
+            let card = self.code[pc];
+            pc += 1;
+            if card.rank == 81 { // 'Q'
+                let mut queen = card.suit as uint;
+                while pc < self.code.len() - 1 && self.code[pc].rank == 81 && self.code[pc].suit == card.suit {
+                    queen += card.suit as uint;
+                    pc += 1;
+                }
+                self.labels.insert(queen, pc);
+            }
+        }
+
+        //\\ DEBUG //\\
+        for (k,v) in self.labels.iter() {
+            println!("label: /{} => {}/", k, v);
+        }
     }
 }
 
