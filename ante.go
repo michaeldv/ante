@@ -1,3 +1,8 @@
+// Copyright (c) 2013-2104 Michael Dvorkin
+// Ante is an esoteric programming language where all you've got is a deck of cards.
+//
+// This is Ante implementation in Go.
+
 package main
 
 import (
@@ -78,7 +83,6 @@ func (ante *Ante) parse(program []byte) *Ante {
 	for i := 0; i < len(lines); i++ {
 		lines[i] = comments.ReplaceAllLiteral(lines[i], []byte(``))
 		lines[i] = whitespace.ReplaceAllLiteral(lines[i], []byte(``))
-		//fmt.Printf("[%s]\n", lines[i])
 	}
 
 	// Turn source file into array of cards.
@@ -93,7 +97,7 @@ func (ante *Ante) parse(program []byte) *Ante {
 	}
 
 	// A pass to convert ranks to integers and extract labels.
-	for pc := 0; pc < len(ante.code); {
+	for pc := 0; pc < len(ante.code) - 1; {
 		card := ante.code[pc]
 		pc++
 		if card.rank == '1' {
@@ -109,8 +113,6 @@ func (ante *Ante) parse(program []byte) *Ante {
 			ante.labels[queen] = pc
 		}
 	}
-	//fmt.Printf("%q\n", ante.code)
-	//fmt.Printf("%q\n", ante.labels)
 
 	return ante
 }
@@ -122,7 +124,6 @@ func (ante *Ante) newline(card Card) *Ante {
 }
 
 func (ante *Ante) jump(card Card) *Ante {
-	//fmt.Printf("jump: %q, %d, %q\n", card, ante.pc, ante.labels)
 	suit := card.suit
 	for ante.pc < len(ante.code) && ante.code[ante.pc].rank == 'K' && ante.code[ante.pc].suit == card.suit {
 		suit += card.suit
@@ -143,7 +144,6 @@ func (ante *Ante) jump(card Card) *Ante {
 }
 
 func (ante *Ante) dump(card Card, char bool) *Ante {
-	//fmt.Printf("dump %q\n", char)
 	value := ante.vars[card.suit]
 	if char {
 		// if value < 0 || value > 255 ...
@@ -166,7 +166,6 @@ func (ante *Ante) dump(card Card, char bool) *Ante {
 }
 
 func (ante *Ante) assign(card Card) *Ante {
-	//fmt.Printf("assign %q\n", card)
 	operands := ante.remaining(card)
 
 	return ante.expression(operands)
@@ -184,7 +183,6 @@ func (ante *Ante) remaining(card Card) []Card {
 		ante.pc++
 	}
 
-	//fmt.Printf("remaining: %q\n", operands)
 	return operands
 }
 
@@ -202,7 +200,6 @@ func (ante *Ante) expression(operands []Card) *Ante {
 	for _, card := range operands[1:] {
 		rank := big.NewInt(int64(card.rank))
 		suit := card.suit
-		//fmt.Printf("rank: %d, suit: %c\n", rank, suit)
 
 		// if rank == 'A' ...
 		if rank.Cmp(big.NewInt('A')) == 0 {
@@ -224,7 +221,6 @@ func (ante *Ante) expression(operands []Card) *Ante {
 		}
 	}
 	ante.vars[target] = initial
-	//fmt.Printf("  %d %c => %d\n", ante.pc, target, initial)
 
 	return ante
 }
