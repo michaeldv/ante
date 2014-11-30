@@ -50,6 +50,19 @@ impl Ante {
         let program = file.read_to_string().unwrap();
         println!("file: {}", program);
         self.parse(program.as_slice())
+
+        while self.pc < self.code.len() {
+            let card = self.code[self.pc];
+            self.pc += 1;
+            match card.rank {
+                0       => self.newline(card),
+                75/*K*/ => self.jump(card),
+                81/*Q*/ => continue,
+                74/*J*/ => self.dump(card, true),
+                10      => self.dump(card, false),
+                _       => self.assign(card)
+            }
+        }
     }
 
     // Turn source file into array of cards.
@@ -109,6 +122,22 @@ impl Ante {
         for (k,v) in self.labels.iter() {
             println!("label: /{} => {}/", k, v);
         }
+    }
+
+    fn newline(&self, card: Card) {
+        println!("newline {}:{}", card.rank, card.suit);
+    }
+
+    fn jump(&self, card: Card) {
+        println!("jump {}:{}", card.rank, card.suit);
+    }
+
+    fn assign(&self, card: Card) {
+        println!("assign {}:{}", card.rank, card.suit);
+    }
+
+    fn dump(&self, card: Card, as_character: bool) {
+        println!("dump {}:{} as character {}", card.rank, card.suit, as_character);
     }
 }
 
