@@ -49,7 +49,7 @@ impl Ante {
         let mut file = File::open(&Path::new(filename));
         let program = file.read_to_string().unwrap();
         println!("file: {}", program);
-        self.parse(program.as_slice())
+        self.parse(program.as_slice());
 
         while self.pc < self.code.len() {
             let card = self.code[self.pc];
@@ -138,6 +138,11 @@ impl Ante {
 
     fn dump(&self, card: Card, as_character: bool) {
         println!("dump {}:{} as character {}", card.rank, card.suit, as_character);
+    }
+
+    // NOTE: fail! got renamed to panic!
+    fn exception(&self, message: &str) {
+        fail!("Ante exception: {} on line {} (pc:{})\n", message, self.line, self.pc)
     }
 }
 
