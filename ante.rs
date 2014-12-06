@@ -12,6 +12,7 @@ use std::collections::HashMap;
 use regex::Regex;
 use num::bigint::BigInt;
 
+static A: u32 = 65;
 static J: u32 = 74;
 static Q: u32 = 81;
 static K: u32 = 75;
@@ -151,7 +152,7 @@ impl Ante {
     fn assign(&mut self, card: Card) -> &Ante {
         println!("assign {}:{}", card.rank, card.suit);
         let operands = self.remaining(card);
-        self//.expression(operands)
+        self.expression(operands)
     }
 
     fn dump(&self, card: Card, as_character: bool) -> &Ante {
@@ -171,6 +172,38 @@ impl Ante {
             self.pc += 1;
         }
         operands
+    }
+
+    fn expression(&mut self, operands: Vec<Card>) -> &Ante {
+        let mut initial = operands[0].rank;
+        let target = std::char::from_u32(operands[0].suit).unwrap();
+
+        if initial == A {
+            initial = self.vars[target] as u32;
+        }
+
+        for i in range(1, operands.len()) {
+            let mut rank = operands[i].rank;
+            let suit = std::char::from_u32(operands[i].suit).unwrap();
+
+            if rank == A {
+                rank = self.vars[suit] as u32;
+            }
+            match suit {
+                '♦' => initial += rank,
+                '♥' => initial *= rank,
+                '♠' => initial -= rank,
+                '♣' => if rank != 0 {
+                            initial /= rank;
+                        } else {
+                            self.exception("division by zero");
+                        },
+                _ => continue
+            }
+        }
+
+        *self.vars.get_mut(&target) = initial as uint;
+        self
     }
 
     // NOTE: fail! got renamed to panic!
