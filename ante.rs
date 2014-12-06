@@ -12,6 +12,9 @@ use std::collections::HashMap;
 use regex::Regex;
 use num::bigint::BigInt;
 
+static J: u32 = 74;
+static Q: u32 = 81;
+static K: u32 = 75;
 
 struct Card {
     rank: u32,
@@ -48,19 +51,20 @@ impl Ante {
         }
     }
 
-    fn run(&mut self) {
+    fn run(&mut self) -> &Ante {
         while self.pc < self.code.len() {
             let card = self.code[self.pc];
             self.pc += 1;
             match card.rank {
-                0       => self.newline(card),
-                75/*K*/ => self.jump(card),
-                81/*Q*/ => continue,
-                74/*J*/ => self.dump(card, true),
-                10      => self.dump(card, false),
-                _       => self.assign(card)
-            }
+                0  => self.newline(card),
+                K  => self.jump(card),
+                Q  => continue,
+                J  => self.dump(card, true),
+                10 => self.dump(card, false),
+                _  => self.assign(card)
+            };
         }
+        self
     }
 
     // Turn source file into array of cards.
@@ -81,7 +85,7 @@ impl Ante {
         }
 
         // Turn source file into array of cards. Each card a struct of rank and suit.
-        let mut code: Vec<Card> = Vec::new();
+        let mut code: Vec<Card> = vec![];
         let card = Regex::new(r"(10|[2-9JQKA])([♦♥♠♣])").unwrap();
         for (i, line) in lines.iter().enumerate() {
             // Line number cards have zero rank.
@@ -116,9 +120,9 @@ impl Ante {
         while pc < code.len() - 1 {
             let card = code[pc];
             pc += 1;
-            if card.rank == 81/*Q*/ {
+            if card.rank == Q {
                 let mut queen = card.suit as uint;
-                while pc < code.len() && code[pc].rank == 81/*Q*/ && code[pc].suit == card.suit {
+                while pc < code.len() && code[pc].rank == Q && code[pc].suit == card.suit {
                     queen += card.suit as uint;
                     pc += 1;
                 }
@@ -133,20 +137,40 @@ impl Ante {
         labels
     }
 
-    fn newline(&self, card: Card) {
+    fn newline(&mut self, card: Card) -> &Ante {
         println!("newline {}:{}", card.rank, card.suit);
+        self.line = card.suit as uint;
+        self
     }
 
-    fn jump(&self, card: Card) {
+    fn jump(&self, card: Card) -> &Ante {
         println!("jump {}:{}", card.rank, card.suit);
+        self
     }
 
-    fn assign(&self, card: Card) {
+    fn assign(&mut self, card: Card) -> &Ante {
         println!("assign {}:{}", card.rank, card.suit);
+        let operands = self.remaining(card);
+        self//.expression(operands)
     }
 
-    fn dump(&self, card: Card, as_character: bool) {
+    fn dump(&self, card: Card, as_character: bool) -> &Ante {
         println!("dump {}:{} as character {}", card.rank, card.suit, as_character);
+        self
+    }
+
+    fn remaining(&mut self, card: Card) -> Vec<Card> {
+        let mut operands: Vec<Card> = vec![card];
+
+        while self.pc < self.code.len() {
+            let card = self.code[self.pc];
+            if card.rank == 0 || card.rank == K || card.rank == Q || card.rank == J {
+                break;
+            }
+            operands.push(card);
+            self.pc += 1;
+        }
+        operands
     }
 
     // NOTE: fail! got renamed to panic!
@@ -158,5 +182,5 @@ impl Ante {
 
 fn main() {
     println!("usage: ante filename.ante");
-    Ante::new("factorial.ante".as_slice()).run();
+    Ante::new("hello.ante".as_slice()).run();
 }
