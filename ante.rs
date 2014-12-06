@@ -28,7 +28,6 @@ struct Ante {
     code:   Vec<Card>,              // Array of cards.
     vars:   HashMap<char, uint>,    // Four registers hashed by suit.
     labels: HashMap<uint, uint>,    // Labels for ante.pc to jump to.
-    buffer: Vec<char>               // Buffer to collect UTF-8 character bytes.
 }
 
 impl Ante {
@@ -47,8 +46,7 @@ impl Ante {
             line:   0,
             code:   code,
             vars:   vars,
-            labels: labels,
-            buffer: vec![]
+            labels: labels
         }
     }
 
@@ -139,24 +137,34 @@ impl Ante {
     }
 
     fn newline(&mut self, card: Card) -> &Ante {
-        println!("newline {}:{}", card.rank, card.suit);
+        //println!("newline {}:{}", card.rank, card.suit);
         self.line = card.suit as uint;
         self
     }
 
     fn jump(&self, card: Card) -> &Ante {
-        println!("jump {}:{}", card.rank, card.suit);
+        //println!("jump {}:{}", card.rank, card.suit);
         self
     }
 
     fn assign(&mut self, card: Card) -> &Ante {
-        println!("assign {}:{}", card.rank, card.suit);
+        //println!("assign {}:{}", card.rank, card.suit);
         let operands = self.remaining(card);
         self.expression(operands)
     }
 
     fn dump(&self, card: Card, as_character: bool) -> &Ante {
-        println!("dump {}:{} as character {}", card.rank, card.suit, as_character);
+        //println!("dump {}:{} as character {}", card.rank, card.suit, as_character);
+        let value = self.vars[std::char::from_u32(card.suit).unwrap()];
+        if as_character {
+            if value >= 0 as uint && value <= 255 as uint {
+                print!("{}", std::char::from_u32(value as u32).unwrap());
+            } else {
+                self.exception(format!("character code {} is out of 0..255 range", value).as_slice());
+            }
+        } else {
+            print!("{}", value);
+        }
         self
     }
 
