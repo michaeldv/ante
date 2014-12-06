@@ -28,29 +28,27 @@ struct Ante {
 }
 
 impl Ante {
-    fn new() -> Ante {
+    fn new(filename: &str) -> Ante {
         let mut vars = HashMap::new();
         vars.insert('♦', 0);
         vars.insert('♥', 0);
         vars.insert('♠', 0);
         vars.insert('♣', 0);
 
+        let code = Ante::parse(filename);
+        let labels = Ante::resolve(&code);
+
         Ante {
             pc:     0,
             line:   0,
-            code:   vec![],
+            code:   code,
             vars:   vars,
-            labels: HashMap::new(),
+            labels: labels,
             buffer: vec![]
         }
     }
 
-    fn run(&mut self, filename: &str) {
-        let mut file = File::open(&Path::new(filename));
-        let program = file.read_to_string().unwrap();
-        println!("file: {}", program);
-        self.parse(program.as_slice());
-
+    fn run(&mut self) {
         while self.pc < self.code.len() {
             let card = self.code[self.pc];
             self.pc += 1;
@@ -66,10 +64,14 @@ impl Ante {
     }
 
     // Turn source file into array of cards.
-    fn parse(&mut self, program: &str) {
+    fn parse(filename: &str) -> Vec<Card> {
+        let mut file = File::open(&Path::new(filename));
+        let program = file.read_to_string().unwrap();
+        println!("file: {}", program);
+
         // Split program blob into lines getting rid of comments and whitespaces.
         let comments = Regex::new(r"#.*$").unwrap();
-        let lines: Vec<String> = program.lines().map( |line|
+        let lines: Vec<String> = program.as_slice().lines().map( |line|
             comments.replace_all(line, "").as_slice().trim().to_string()
         ).collect();
 
@@ -79,10 +81,11 @@ impl Ante {
         }
 
         // Turn source file into array of cards. Each card a struct of rank and suit.
+        let mut code: Vec<Card> = Vec::new();
         let card = Regex::new(r"(10|[2-9JQKA])([♦♥♠♣])").unwrap();
         for (i, line) in lines.iter().enumerate() {
             // Line number cards have zero rank.
-            self.code.push(Card { rank: 0, suit: i as u32 + 1 });
+            code.push(Card { rank: 0, suit: i as u32 + 1 });
 
             // Parse cards using regural expression. Card rank and suit characters get saved
             // as u32 runes (to cast u32 back to char use std::char::from_u32(ch).unwrap()).
@@ -94,34 +97,40 @@ impl Ante {
                    '2'...'9' => Card { rank: rank as u32 - 48, suit: suit as u32 },
                    _         => Card { rank: rank as u32, suit: suit as u32 }
                 };
-                self.code.push(card);
+                code.push(card);
             }
         }
 
         //\\ DEBUG //\\
-        for i in range(0, self.code.len()) {
-            println!("{:2}) code: /{}:{}/", i, self.code[i].rank, self.code[i].suit);
+        for i in range(0, code.len()) {
+            println!("{:2}) code: /{}:{}/", i, code[i].rank, code[i].suit);
         }
+        code
+    }
 
-        // Extra pass to set up jump labels.
+    // Extra pass to set up jump labels.
+    fn resolve(code: &Vec<Card>) -> HashMap<uint, uint> {
         let mut pc = 0u;
-        while pc < self.code.len() - 1 {
-            let card = self.code[pc];
+        let mut labels: HashMap<uint, uint> = HashMap::new();
+
+        while pc < code.len() - 1 {
+            let card = code[pc];
             pc += 1;
-            if card.rank == 81 { // 'Q'
+            if card.rank == 81/*Q*/ {
                 let mut queen = card.suit as uint;
-                while pc < self.code.len() - 1 && self.code[pc].rank == 81 && self.code[pc].suit == card.suit {
+                while pc < code.len() && code[pc].rank == 81/*Q*/ && code[pc].suit == card.suit {
                     queen += card.suit as uint;
                     pc += 1;
                 }
-                self.labels.insert(queen, pc);
+                labels.insert(queen, pc);
             }
         }
 
         //\\ DEBUG //\\
-        for (k,v) in self.labels.iter() {
+        for (k,v) in labels.iter() {
             println!("label: /{} => {}/", k, v);
         }
+        labels
     }
 
     fn newline(&self, card: Card) {
@@ -149,5 +158,5 @@ impl Ante {
 
 fn main() {
     println!("usage: ante filename.ante");
-    Ante::new().run("factorial.ante".as_slice());
+    Ante::new("factorial.ante".as_slice()).run();
 }
