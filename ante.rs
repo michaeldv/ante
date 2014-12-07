@@ -142,8 +142,22 @@ impl Ante {
         self
     }
 
-    fn jump(&self, card: Card) -> &Ante {
+    fn jump(&mut self, card: Card) -> &Ante {
         //println!("jump {}:{}", card.rank, card.suit);
+        let mut suit = card.suit;
+        while self.pc < self.code.len() && self.code[self.pc].rank == K && self.code[self.pc].suit == card.suit {
+            suit += card.suit;
+            self.pc += 1;
+        }
+
+        if self.vars[std::char::from_u32(card.suit).unwrap()] != 0 {
+            let label: uint = suit as uint;
+            if self.labels.contains_key(&label) {
+                self.pc = self.labels[label];
+            } else {
+                self.exception("can't find the label...");
+            }
+        }
         self
     }
 
@@ -223,5 +237,5 @@ impl Ante {
 
 fn main() {
     println!("usage: ante filename.ante");
-    Ante::new("hello.ante".as_slice()).run();
+    Ante::new("numbers.ante".as_slice()).run();
 }
