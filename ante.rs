@@ -12,31 +12,35 @@ use std::collections::HashMap;
 use regex::Regex;
 use num::bigint::BigInt;
 
-static A: uint = 65;
-static J: uint = 74;
-static Q: uint = 81;
-static K: uint = 75;
+const A: uint = 'A' as uint;
+const J: uint = 'J' as uint;
+const Q: uint = 'Q' as uint;
+const K: uint = 'K' as uint;
+const D: uint = '♦' as uint;
+const H: uint = '♥' as uint;
+const S: uint = '♠' as uint;
+const C: uint = '♣' as uint;
 
 struct Card {
     rank: uint,
-    suit: char
+    suit: uint
 }
 
 struct Ante {
     pc:     uint,                   // Program counter (index within ante.code)
     line:   uint,                   // Current line number.
     code:   Vec<Card>,              // Array of cards.
-    vars:   HashMap<char, uint>,    // Four registers hashed by suit.
+    vars:   HashMap<uint, uint>,    // Four registers hashed by suit.
     labels: HashMap<uint, uint>,    // Labels for ante.pc to jump to.
 }
 
 impl Ante {
     fn new(filename: &str) -> Ante {
-        let mut vars = HashMap::new();
-        vars.insert('♦', 0);
-        vars.insert('♥', 0);
-        vars.insert('♠', 0);
-        vars.insert('♣', 0);
+        let mut vars: HashMap<uint, uint> = HashMap::new();
+        vars.insert(D, 0);
+        vars.insert(H, 0);
+        vars.insert(S, 0);
+        vars.insert(C, 0);
 
         let code = Ante::parse(filename);
         let labels = Ante::resolve(&code);
@@ -55,12 +59,12 @@ impl Ante {
             let card = self.code[self.pc];
             self.pc += 1;
             match card.rank {
-                0  => self.newline(card),
-                K  => self.jump(card),
-                Q  => continue,
-                J  => self.dump(card, true),
-                10 => self.dump(card, false),
-                _  => self.assign(card)
+                0u  => self.newline(card),
+                K   => self.jump(card),
+                Q   => continue,
+                J   => self.dump(card, true),
+                10u => self.dump(card, false),
+                _   => self.assign(card)
             };
         }
         self
@@ -70,7 +74,6 @@ impl Ante {
     fn parse(filename: &str) -> Vec<Card> {
         let mut file = File::open(&Path::new(filename));
         let program = file.read_to_string().unwrap();
-        println!("file: {}", program);
 
         // Split program blob into lines getting rid of comments and whitespaces.
         let comments = Regex::new(r"#.*$").unwrap();
@@ -78,35 +81,24 @@ impl Ante {
             comments.replace_all(line, "").as_slice().trim().to_string()
         ).collect();
 
-        //\\ DEBUG //\\
-        for i in range(0, lines.len()) {
-            println!("{:2}) parsing: /{}/", i, lines[i]);
-        }
-
         // Turn source file into array of cards. Each card a struct of rank and suit.
         let mut code: Vec<Card> = vec![];
         let card = Regex::new(r"(10|[2-9JQKA])([♦♥♠♣])").unwrap();
         for (i, line) in lines.iter().enumerate() {
             // Line number cards have zero rank.
-            code.push(Card { rank: 0, suit: std::char::from_u32(i as u32 + 1).unwrap() });
+            code.push(Card { rank: 0, suit: i + 1 });
 
-            // Parse cards using regural expression. Card rank and suit characters get saved
-            // as u32 runes (to cast u32 back to char use std::char::from_u32(ch).unwrap()).
+            // Parse cards using regural expression.
             for caps in card.captures_iter(line.as_slice()) {
                 let rank = caps.at(1).char_at(0);
                 let suit = caps.at(2).char_at(0);
                 let card = match rank {
-                   '1'       => Card { rank: 10, suit: suit },
-                   '2'...'9' => Card { rank: rank as uint - 48, suit: suit },
-                   _         => Card { rank: rank as uint, suit: suit }
+                   '1'       => Card { rank: 10, suit: suit as uint },
+                   '2'...'9' => Card { rank: rank as uint - 48, suit: suit as uint },
+                   _         => Card { rank: rank as uint, suit: suit as uint }
                 };
                 code.push(card);
             }
-        }
-
-        //\\ DEBUG //\\
-        for i in range(0, code.len()) {
-            println!("{:2}) code: /{}:{}/", i, code[i].rank, code[i].suit);
         }
         code
     }
@@ -128,22 +120,15 @@ impl Ante {
                 labels.insert(queen, pc);
             }
         }
-
-        //\\ DEBUG //\\
-        for (k,v) in labels.iter() {
-            println!("label: /{} => {}/", k, v);
-        }
         labels
     }
 
     fn newline(&mut self, card: Card) -> &Ante {
-        //println!("newline {}:{}", card.rank, card.suit);
         self.line = card.suit as uint;
         self
     }
 
     fn jump(&mut self, card: Card) -> &Ante {
-        //println!("jump {}:{}", card.rank, card.suit);
         let mut suit = card.suit as uint;
         while self.pc < self.code.len() && self.code[self.pc].rank == K && self.code[self.pc].suit == card.suit {
             suit += card.suit as uint;
@@ -162,16 +147,14 @@ impl Ante {
     }
 
     fn assign(&mut self, card: Card) -> &Ante {
-        //println!("assign {}:{}", card.rank, card.suit);
         let operands = self.remaining(card);
         self.expression(operands)
     }
 
     fn dump(&self, card: Card, as_character: bool) -> &Ante {
-        //println!("dump {}:{} as character {}", card.rank, card.suit, as_character);
         let value = self.vars[card.suit];
         if as_character {
-            if value >= 0 as uint && value <= 255 as uint {
+            if value <= 255 {
                 print!("{}", std::char::from_u32(value as u32).unwrap());
             } else {
                 self.exception(format!("character code {} is out of 0..255 range", value).as_slice());
@@ -201,7 +184,7 @@ impl Ante {
         let target = operands[0].suit;
 
         if initial == A {
-            initial = self.vars[target] as uint;
+            initial = self.vars[target];
         }
 
         for i in range(1, operands.len()) {
@@ -209,22 +192,22 @@ impl Ante {
             let suit = operands[i].suit;
 
             if rank == A {
-                rank = self.vars[suit] as uint;
+                rank = self.vars[suit];
             }
             match suit {
-                '♦' => initial += rank,
-                '♥' => initial *= rank,
-                '♠' => initial -= rank,
-                '♣' => if rank != 0 {
-                            initial /= rank;
-                        } else {
-                            self.exception("division by zero");
-                        },
+                D => initial += rank,
+                H => initial *= rank,
+                S => initial -= rank,
+                C => if rank != 0 {
+                        initial /= rank;
+                     } else {
+                        self.exception("division by zero");
+                     },
                 _ => continue
             }
         }
 
-        *self.vars.get_mut(&target) = initial as uint;
+        *self.vars.get_mut(&target) = initial;
         self
     }
 
