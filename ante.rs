@@ -8,7 +8,9 @@ extern crate num;
 
 use std::io::File;
 use std::collections::HashMap;
-
+use std::num::Zero;
+use std::num::from_int;
+use std::char::from_u32;
 use regex::Regex;
 use num::bigint::BigInt;
 
@@ -30,17 +32,17 @@ struct Ante {
     pc:     uint,                   // Program counter (index within ante.code)
     line:   uint,                   // Current line number.
     code:   Vec<Card>,              // Array of cards.
-    vars:   HashMap<uint, uint>,    // Four registers hashed by suit.
+    vars:   HashMap<uint, BigInt>,  // Four registers hashed by suit.
     labels: HashMap<uint, uint>,    // Labels for ante.pc to jump to.
 }
 
 impl Ante {
     fn new(filename: &str) -> Ante {
-        let mut vars: HashMap<uint, uint> = HashMap::new();
-        vars.insert(D, 0);
-        vars.insert(H, 0);
-        vars.insert(S, 0);
-        vars.insert(C, 0);
+        let mut vars: HashMap<uint, BigInt> = HashMap::new();
+        vars.insert(D, Ante::big(0));
+        vars.insert(H, Ante::big(0));
+        vars.insert(S, Ante::big(0));
+        vars.insert(C, Ante::big(0));
 
         let code = Ante::parse(filename);
         let labels = Ante::resolve(&code);
@@ -135,7 +137,7 @@ impl Ante {
             self.pc += 1;
         }
 
-        if self.vars[card.suit] != 0 {
+        if !self.vars[card.suit].is_zero() {
             let label: uint = suit as uint;
             if self.labels.contains_key(&label) {
                 self.pc = self.labels[label];
@@ -152,12 +154,12 @@ impl Ante {
     }
 
     fn dump(&self, card: Card, as_character: bool) -> &Ante {
-        let value = self.vars[card.suit];
+        let value = self.vars[card.suit].clone();
         if as_character {
-            if value <= 255 {
-                print!("{}", std::char::from_u32(value as u32).unwrap());
-            } else {
+            if value < Ante::big(0) || value > Ante::big(255) {
                 self.exception(format!("character code {} is out of 0..255 range", value).as_slice());
+            } else {
+                print!("{:1c}", from_u32(value.to_u32().unwrap()).unwrap());
             }
         } else {
             print!("{}", value);
@@ -180,26 +182,27 @@ impl Ante {
     }
 
     fn expression(&mut self, operands: Vec<Card>) -> &Ante {
-        let mut initial = operands[0].rank;
+        let mut initial: BigInt = Ante::big(operands[0].rank as int);
         let target = operands[0].suit;
 
-        if initial == A {
-            initial = self.vars[target];
+        if initial.to_uint().unwrap() == A {
+            initial = self.vars[target].clone();
         }
 
         for i in range(1, operands.len()) {
-            let mut rank = operands[i].rank;
+            let mut rank = Ante::big(operands[i].rank as int);
             let suit = operands[i].suit;
 
-            if rank == A {
-                rank = self.vars[suit];
+            if rank.to_uint().unwrap() == A {
+                rank = self.vars[suit].clone();
             }
+
             match suit {
-                D => initial += rank,
-                H => initial *= rank,
-                S => initial -= rank,
-                C => if rank != 0 {
-                        initial /= rank;
+                D => { initial = initial.add(&rank) },
+                H => { initial = initial.mul(&rank) },
+                S => { initial = initial.sub(&rank) },
+                C => if !rank.is_zero() {
+                        initial = initial.div(&rank);
                      } else {
                         self.exception("division by zero");
                      },
@@ -211,6 +214,10 @@ impl Ante {
         self
     }
 
+    fn big(n: int) -> BigInt {
+        from_int::<BigInt>(n).unwrap()
+    }
+
     // NOTE: fail! got renamed to panic!
     fn exception(&self, message: &str) {
         fail!("Ante exception: {} on line {} (pc:{})\n", message, self.line, self.pc)
@@ -220,5 +227,5 @@ impl Ante {
 
 fn main() {
     println!("usage: ante filename.ante");
-    Ante::new("99bottles.ante".as_slice()).run();
+    Ante::new("fizzbuzz.ante".as_slice()).run();
 }
