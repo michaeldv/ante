@@ -10,7 +10,7 @@ use std::io::File;
 use std::collections::HashMap;
 use std::num::Zero;
 use std::num::from_int;
-use std::char::from_u32;
+use std::str::{is_utf8, from_utf8};
 use regex::Regex;
 use num::bigint::BigInt;
 
@@ -34,6 +34,7 @@ struct Ante {
     code:   Vec<Card>,              // Array of cards.
     vars:   HashMap<uint, BigInt>,  // Four registers hashed by suit.
     labels: HashMap<uint, uint>,    // Labels for ante.pc to jump to.
+    buffer: Vec<u8>                 // Buffer to collect UTF-8 character bytes.
 }
 
 impl Ante {
@@ -52,7 +53,8 @@ impl Ante {
             line:   0,
             code:   code,
             vars:   vars,
-            labels: labels
+            labels: labels,
+            buffer: vec![]
         }
     }
 
@@ -153,13 +155,19 @@ impl Ante {
         self.expression(operands)
     }
 
-    fn dump(&self, card: Card, as_character: bool) -> &Ante {
+    fn dump(&mut self, card: Card, as_character: bool) -> &Ante {
         let value = self.vars[card.suit].clone();
         if as_character {
             if value < Ante::big(0) || value > Ante::big(255) {
-                self.exception(format!("character code {} is out of 0..255 range", value).as_slice());
+                self.exception(format!("character code {} is not in 0..255 range", value).as_slice());
             } else {
-                print!("{:1c}", from_u32(value.to_u32().unwrap()).unwrap());
+                // Collect the bytes till we have full UTF-8 character.
+                // Once the character is built dump it and reset the buffer.
+                self.buffer.push(value.to_u8().unwrap());
+                if is_utf8(self.buffer.as_slice()) {
+                    print!("{}", from_utf8(self.buffer.as_slice()).unwrap());
+                    self.buffer = vec![];
+                }
             }
         } else {
             print!("{}", value);
@@ -227,5 +235,5 @@ impl Ante {
 
 fn main() {
     println!("usage: ante filename.ante");
-    Ante::new("fizzbuzz.ante".as_slice()).run();
+    Ante::new("quine.ante".as_slice()).run();
 }
