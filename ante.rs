@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2104 Michael Dvorkin
+// Copyright (c) 2013-2014 Michael Dvorkin
 // Ante is an esoteric programming language where all you've got is a deck of cards.
 //
 // This is Ante implementation in Rust.
@@ -11,6 +11,8 @@ use std::collections::HashMap;
 use std::num::Zero;
 use std::num::from_int;
 use std::str::{is_utf8, from_utf8};
+use std::char::{from_u32};
+use std::os;
 use regex::Regex;
 use num::bigint::BigInt;
 
@@ -39,14 +41,13 @@ struct Ante {
 
 impl Ante {
     fn new(filename: &str) -> Ante {
+        let code = Ante::parse(filename);
+        let labels = Ante::resolve(&code);
         let mut vars: HashMap<uint, BigInt> = HashMap::new();
         vars.insert(D, Ante::big(0));
         vars.insert(H, Ante::big(0));
         vars.insert(S, Ante::big(0));
         vars.insert(C, Ante::big(0));
-
-        let code = Ante::parse(filename);
-        let labels = Ante::resolve(&code);
 
         Ante {
             pc:     0,
@@ -76,7 +77,11 @@ impl Ante {
 
     // Turn source file into array of cards.
     fn parse(filename: &str) -> Vec<Card> {
-        let mut file = File::open(&Path::new(filename));
+        let mut file = match File::open(&Path::new(filename)) {
+            // The `desc` field of `IoError` is a string that describes the error.
+            Err(reason) => fail!("couldn't open {} ({})", filename, reason.desc),
+            Ok(file) => file,
+        };
         let program = file.read_to_string().unwrap();
 
         // Split program blob into lines getting rid of comments and whitespaces.
@@ -92,7 +97,7 @@ impl Ante {
             // Line number cards have zero rank.
             code.push(Card { rank: 0, suit: i + 1 });
 
-            // Parse cards using regural expression.
+            // Parse lines to turn them into array of cards.
             for caps in card.captures_iter(line.as_slice()) {
                 let rank = caps.at(1).char_at(0);
                 let suit = caps.at(2).char_at(0);
@@ -140,7 +145,7 @@ impl Ante {
         }
 
         if !self.vars[card.suit].is_zero() {
-            let label: uint = suit as uint;
+            let label = suit as uint;
             if self.labels.contains_key(&label) {
                 self.pc = self.labels[label];
             } else {
@@ -234,6 +239,9 @@ impl Ante {
 
 
 fn main() {
-    println!("usage: ante filename.ante");
-    Ante::new("quine.ante".as_slice()).run();
+    if os::args().len() == 2 {
+        Ante::new(os::args()[1].as_slice()).run();
+    } else {
+        println!("usage: ante filename.ante");
+    }
 }
