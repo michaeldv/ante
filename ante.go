@@ -85,7 +85,7 @@ func (ante *Ante) parse(program []byte) *Ante {
 		lines[i] = whitespace.ReplaceAllLiteral(lines[i], []byte(``))
 	}
 
-	// Turn source file into array of cards.
+	// Parse lines to turn them into array of cards.
 	re := regexp.MustCompile(`(10|[2-9JQKA])([♦♥♠♣])`)
 	for i := 0; i < len(lines); i++ {
 		// Line number cards have 0 rank.
@@ -136,7 +136,7 @@ func (ante *Ante) jump(card Card) *Ante {
 			ante.pc = ante.labels[suit]
 		} else {
 			label := strings.Repeat(fmt.Sprintf(`Q%c`, card.suit), int(suit/card.suit))
-			ante.exception(`can't find ` + label + ` to go`)
+			ante.exception(`can't find ` + label + ` to go to`)
 		}
 	}
 

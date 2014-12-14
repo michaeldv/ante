@@ -149,7 +149,8 @@ impl Ante {
             if self.labels.contains_key(&label) {
                 self.pc = self.labels[label];
             } else {
-                self.exception("can't find the label...");
+                let label = format!("Q{:c}", from_u32(card.suit as u32).unwrap());
+                self.exception(format!("can't find {} to go to", label.repeat(suit / card.suit)).as_slice());
             }
         }
         self
