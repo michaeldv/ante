@@ -148,7 +148,7 @@ func (ante *Ante) dump(card Card, char bool) *Ante {
 	if char {
 		// if value < 0 || value > 255 ...
 		if value.Cmp(big.NewInt(0)) == -1 || value.Cmp(big.NewInt(255)) == 1 {
-			ante.exception(fmt.Sprintf(`character code %d is out of 0..255 range`, value))
+			ante.exception(fmt.Sprintf(`character code %d is not in 0..255 range`, value))
 		} else {
 			// Collect the bytes till we have full UTF-8 character.
 			// Once the character is built dump it and reset the buffer.

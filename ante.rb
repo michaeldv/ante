@@ -103,7 +103,7 @@ class Ante
       if value.between?(0, 255)
         print value.chr
       else
-        exception("character code #{value} is out of 0..255 range")
+        exception("character code #{value} is not in 0..255 range")
       end
     else
       print value
