@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Michael Dvorkin
+// Copyright (c) 2014-2015 Michael Dvorkin
 // Ante is an esoteric programming language where all you've got is a deck of cards.
 //
 // This is Ante implementation in Rust.
@@ -16,14 +16,14 @@ use std::os;
 use regex::Regex;
 use num::bigint::BigInt;
 
-const A: uint = 'A' as uint;
-const J: uint = 'J' as uint;
-const Q: uint = 'Q' as uint;
-const K: uint = 'K' as uint;
-const D: uint = '♦' as uint;
-const H: uint = '♥' as uint;
-const S: uint = '♠' as uint;
-const C: uint = '♣' as uint;
+const ACE:      uint = 'A' as uint;
+const JACK:     uint = 'J' as uint;
+const QUEEN:    uint = 'Q' as uint;
+const KING:     uint = 'K' as uint;
+const DIAMONDS: uint = '♦' as uint;
+const HEARTS:   uint = '♥' as uint;
+const SPADES:   uint = '♠' as uint;
+const CLUBS:    uint = '♣' as uint;
 
 struct Card {
     rank: uint,
@@ -44,10 +44,10 @@ impl Ante {
         let code = Ante::parse(filename);
         let labels = Ante::resolve(&code);
         let mut vars: HashMap<uint, BigInt> = HashMap::new();
-        vars.insert(D, Ante::big(0));
-        vars.insert(H, Ante::big(0));
-        vars.insert(S, Ante::big(0));
-        vars.insert(C, Ante::big(0));
+        vars.insert(DIAMONDS, Ante::big(0));
+        vars.insert(HEARTS, Ante::big(0));
+        vars.insert(SPADES, Ante::big(0));
+        vars.insert(CLUBS, Ante::big(0));
 
         Ante {
             pc:     0,
@@ -64,12 +64,12 @@ impl Ante {
             let card = self.code[self.pc];
             self.pc += 1;
             match card.rank {
-                0u  => self.newline(card),
-                K   => self.jump(card),
-                Q   => continue,
-                J   => self.dump(card, true),
-                10u => self.dump(card, false),
-                _   => self.assign(card)
+                0u    => self.newline(card),
+                10u   => self.dump(card, false),
+                JACK  => self.dump(card, true),
+                QUEEN => continue,
+                KING  => self.jump(card),
+                _     => self.assign(card)
             };
         }
         self
@@ -120,9 +120,9 @@ impl Ante {
         while pc < code.len() - 1 {
             let card = code[pc];
             pc += 1;
-            if card.rank == Q {
+            if card.rank == QUEEN {
                 let mut queen = card.suit as uint;
-                while pc < code.len() && code[pc].rank == Q && code[pc].suit == card.suit {
+                while pc < code.len() && code[pc].rank == QUEEN && code[pc].suit == card.suit {
                     queen += card.suit as uint;
                     pc += 1;
                 }
@@ -139,7 +139,7 @@ impl Ante {
 
     fn jump(&mut self, card: Card) -> &Ante {
         let mut suit = card.suit as uint;
-        while self.pc < self.code.len() && self.code[self.pc].rank == K && self.code[self.pc].suit == card.suit {
+        while self.pc < self.code.len() && self.code[self.pc].rank == KING && self.code[self.pc].suit == card.suit {
             suit += card.suit as uint;
             self.pc += 1;
         }
@@ -186,7 +186,7 @@ impl Ante {
 
         while self.pc < self.code.len() {
             let card = self.code[self.pc];
-            if card.rank == 0 || card.rank == K || card.rank == Q || card.rank == J {
+            if card.rank == 0 || card.rank == KING || card.rank == QUEEN || card.rank == JACK {
                 break;
             }
             operands.push(card);
@@ -199,7 +199,7 @@ impl Ante {
         let mut initial: BigInt = Ante::big(operands[0].rank as int);
         let target = operands[0].suit;
 
-        if initial.to_uint().unwrap() == A {
+        if initial.to_uint().unwrap() == ACE {
             initial = self.vars[target].clone();
         }
 
@@ -207,20 +207,20 @@ impl Ante {
             let mut rank = Ante::big(operands[i].rank as int);
             let suit = operands[i].suit;
 
-            if rank.to_uint().unwrap() == A {
+            if rank.to_uint().unwrap() == ACE {
                 rank = self.vars[suit].clone();
             }
 
             match suit {
-                D => { initial = initial.add(&rank) },
-                H => { initial = initial.mul(&rank) },
-                S => { initial = initial.sub(&rank) },
-                C => if !rank.is_zero() {
-                        initial = initial.div(&rank);
-                     } else {
-                        self.exception("division by zero");
-                     },
-                _ => continue
+                DIAMONDS => { initial = initial.add(&rank) },
+                HEARTS   => { initial = initial.mul(&rank) },
+                SPADES   => { initial = initial.sub(&rank) },
+                CLUBS    => if !rank.is_zero() {
+                                initial = initial.div(&rank);
+                            } else {
+                                self.exception("division by zero");
+                            },
+                _        => continue
             }
         }
 
