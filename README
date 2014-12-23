@@ -27,13 +27,7 @@ SYNTAX
     Kings and Queens can have twins, triplets, etc. of the same suit. While
     single K♥ goes to Q♥, K♥K♥ twins will go to Q♥Q♥ and so on.
 
-EXAMPLES
-
-    5♣            # ♣ = 5
-    2♦ 3♥         # ♦ = 2 * 3 (♦ is 6)
-    A♦ 2♦ 5♥      # ♦ = (♦ + 2) * 5 (♦ is 40)
-    2♦ 3♥ A♣      # ♦ = 2 * 3 / ♣ (♦ is 6/5 = 1)
-    Q♦ K♦         # Infinite loop since ♦ != 0
+EXAMPLE
 
     # 15.times { |i| print i }
     3♥ 5♥         # ♥ = 3 * 5
@@ -43,10 +37,10 @@ EXAMPLES
     A♥ 3♠ 2♦      # ♥ = ♥ - 3 + 2
     K♥            # Jump to Q♥ if ♥ != 0
 
-    For more examples check out *.ante files including Yusuke Endoh's
+    For more examples check out samples/*.ante files including Yusuke Endoh's
     mind-boggling Ante quine (the program that prints itself):
 
-    https://github.com/michaeldv/ante/blob/master/quine.ante
+    https://github.com/michaeldv/ante/blob/master/samples/quine.ante
 
 LICENSE
 
