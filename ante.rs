@@ -1,7 +1,8 @@
 // Copyright (c) 2014-2015 Michael Dvorkin
 // Ante is an esoteric programming language where all you've got is a deck of cards.
 //
-// This is Ante implementation in Rust.
+// This is Ante implementation in Rust. Requires Rust v0.12.0 stable; might not
+// work with other versions.
 
 extern crate regex;
 extern crate num;
