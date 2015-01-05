@@ -81,6 +81,10 @@ struct Card {
     var suit: UInt
 }
 
+// Suppose you went back to Ada Lovelace and asked her the difference between
+// a script and a program. She'd probably look at you funny, then say something
+// like: Well, a script is what you give the actors, but a program is what you
+// give the audience. That Ada was one sharp lady... -- Larry Wall
 class Ante {
     var pc:     Int = 0                        // Program counter (index within ante.code)
     var line:   UInt = 0                       // Current line number.
