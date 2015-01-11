@@ -1,11 +1,15 @@
+# When the first caveman programmer chiseled the first program on the walls of
+# the first cave computer, it was a program to paint the string "Hello, world"
+# in Antelope pictures. Roman programming textbooks began with the "Salut,
+# Mundi" program. I don't know what happens to people who break with this
+# tradition, but I think it's safer not to find out.
+#                                                             -- Ori Pomerantz
 # ♦ : add
 # ♥ : multiply
 # ♠ : subtract
 # ♣ : divide
 # H  72 e 101 l 108 l 108 o 111 , 44 <sp> 32
 # w 119 o 111 r 114 l 108 d 100 ! 33 <nl> 10
-#
-# puts "Hello, world!"
 #
 9♦ 8♥
 J♦

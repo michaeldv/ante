@@ -40,6 +40,8 @@ struct Ante {
     buffer: Vec<u8>                 // Buffer to collect UTF-8 character bytes.
 }
 
+// A computer program does what you tell it to do, not what you want it to do.
+//                                                             -- Nadav Har'El
 impl Ante {
     fn new(filename: &str) -> Ante {
         let code = Ante::parse(filename);
