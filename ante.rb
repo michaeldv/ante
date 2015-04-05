@@ -97,11 +97,11 @@ class Ante
   end
 
   def dump(card, char = nil)
-    # puts "dump #{card.inspect} => "
     value = instance_variable_get("@#{card.suit}")
+    # puts "dump #{card.inspect} => #{value.inspect}"
     if char
       if value.between?(0, 255)
-        print value.chr
+        print value < 128 ? value.chr : [value].pack("U")
       else
         exception("character code #{value} is not in 0..255 range")
       end
